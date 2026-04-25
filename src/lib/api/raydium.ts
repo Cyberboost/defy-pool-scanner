@@ -11,6 +11,7 @@ export async function fetchRaydiumPools(): Promise<MockPool[]> {
     const response = await fetch(`${RAYDIUM_API_BASE}/ammV3/ammPools`, {
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.RAYDIUM_API_KEY}`,
       },
       next: { revalidate: 60 },
     });
