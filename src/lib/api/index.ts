@@ -2,7 +2,7 @@ import { fetchRaydiumPools } from "./raydium";
 import { fetchJupiterPools } from "./jupiter";
 import { fetchBirdeyePools } from "./birdeye";
 import { fetchDexScreenerPools } from "./dexscreener";
-import { MOCK_POOLS, MockPool, generateMockPools } from "@/lib/mock-data";
+import { MockPool, generateMockPools } from "@/lib/mock-data";
 import { computeOpportunityScore } from "@/lib/utils";
 
 export async function fetchAllPools(): Promise<MockPool[]> {
@@ -40,7 +40,7 @@ export async function fetchAllPools(): Promise<MockPool[]> {
     return enrichedPools.sort((a, b) => b.opportunityScore - a.opportunityScore);
   } catch (error) {
     console.error("Failed to fetch pools, using mock data:", error);
-    return MOCK_POOLS;
+    return generateMockPools();
   }
 }
 
