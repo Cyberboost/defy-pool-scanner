@@ -28,7 +28,7 @@ interface PoolTableProps {
   pools: MockPool[];
 }
 
-type SortKey = keyof MockPool;
+type SortKey = "tvl" | "volume24h" | "apr" | "price" | "spread" | "slippage" | "riskScore" | "opportunityScore";
 
 function OpportunityBadge({ score }: { score: number }) {
   if (score >= 70) return <Badge variant="success">{score.toFixed(0)}</Badge>;

@@ -117,8 +117,8 @@ export function generateMockSwaps(count = 20): MockSwap[] {
   const now = new Date();
 
   for (let i = 0; i < count; i++) {
-    const chars = "0123456789abcdef";
-    const txHash = "0x" + Array.from({ length: 64 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    const base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    const txHash = Array.from({ length: 88 }, () => base58Chars[Math.floor(Math.random() * base58Chars.length)]).join("");
     swaps.push({
       txHash,
       type: Math.random() > 0.5 ? "buy" : "sell",
