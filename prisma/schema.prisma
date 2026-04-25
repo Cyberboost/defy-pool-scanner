@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String      @id @default(cuid())
+  email      String      @unique
+  name       String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  watchlists Watchlist[]
+  alerts     Alert[]
+}
+
+model Dex {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  logoUrl   String?
+  website   String?
+  createdAt DateTime @default(now())
+  pools     Pool[]
+}
+
+model Pool {
+  id               String          @id @default(cuid())
+  address          String          @unique
+  dexId            String
+  dex              Dex             @relation(fields: [dexId], references: [id])
+  baseToken        String          @default("SOL")
+  quoteToken       String          @default("USDC")
+  tvl              Float           @default(0)
+  volume24h        Float           @default(0)
+  apr              Float           @default(0)
+  price            Float           @default(0)
+  spread           Float           @default(0)
+  slippage         Float           @default(0)
+  riskScore        Float           @default(0)
+  opportunityScore Float           @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  snapshots        PoolSnapshot[]
+  watchlists       Watchlist[]
+  alerts           Alert[]
+  aiInsights       AiInsight[]
+}
+
+model PoolSnapshot {
+  id        String   @id @default(cuid())
+  poolId    String
+  pool      Pool     @relation(fields: [poolId], references: [id])
+  tvl       Float
+  volume    Float
+  apr       Float
+  price     Float
+  spread    Float
+  timestamp DateTime @default(now())
+}
+
+model Alert {
+  id        String      @id @default(cuid())
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id])
+  poolId    String
+  pool      Pool        @relation(fields: [poolId], references: [id])
+  type      AlertType
+  threshold Float
+  triggered Boolean     @default(false)
+  message   String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+enum AlertType {
+  LIQUIDITY_CHANGE
+  VOLUME_SPIKE
+  SPREAD_OPPORTUNITY
+  APR_CHANGE
+  RISK_SCORE_CHANGE
+}
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  poolId    String
+  pool      Pool     @relation(fields: [poolId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, poolId])
+}
+
+model AiInsight {
+  id        String   @id @default(cuid())
+  poolId    String
+  pool      Pool     @relation(fields: [poolId], references: [id])
+  insight   String
+  sentiment String?
+  createdAt DateTime @default(now())
+}
