@@ -193,4 +193,4 @@ Tweak the weights or the saturation curves to fit your strategy.
 
 ## License
 
-MIT
+Unlicensed — add a `LICENSE` file before publishing.
