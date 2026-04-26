@@ -1,0 +1,127 @@
+// PoolSignal — Prisma schema
+// Models: User, Dex, Pool, PoolSnapshot, Alert, Watchlist, AiInsight
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  name      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  watchlist Watchlist[]
+  alerts    Alert[]
+}
+
+model Dex {
+  id        String   @id @default(cuid())
+  slug      String   @unique // raydium, orca, jupiter, birdeye, dexscreener
+  name      String
+  url       String?
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  pools     Pool[]
+}
+
+model Pool {
+  id           String         @id @default(cuid())
+  address      String         @unique
+  dexId        String
+  dex          Dex            @relation(fields: [dexId], references: [id])
+  baseSymbol   String         @default("SOL")
+  quoteSymbol  String         @default("USDC")
+  baseMint     String?
+  quoteMint    String?
+  feeBps       Int?
+  tvlUsd       Float          @default(0)
+  volume24hUsd Float          @default(0)
+  apr          Float          @default(0)
+  price        Float          @default(0)
+  spreadBps    Float          @default(0)
+  slippage1k   Float          @default(0) // bps for 1k USDC swap
+  riskScore    Float          @default(0) // 0..100, higher = riskier
+  opportunity  Float          @default(0) // 0..100, higher = better
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  snapshots    PoolSnapshot[]
+  alerts       Alert[]
+  watchlist    Watchlist[]
+  insights     AiInsight[]
+
+  @@index([dexId])
+  @@index([opportunity])
+}
+
+model PoolSnapshot {
+  id           String   @id @default(cuid())
+  poolId       String
+  pool         Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  capturedAt   DateTime @default(now())
+  tvlUsd       Float
+  volume24hUsd Float
+  price        Float
+  apr          Float
+  spreadBps    Float
+  slippage1k   Float
+
+  @@index([poolId, capturedAt])
+}
+
+enum AlertKind {
+  LIQUIDITY_CHANGE
+  VOLUME_SPIKE
+  SPREAD_OPPORTUNITY
+}
+
+enum AlertStatus {
+  PENDING
+  TRIGGERED
+  DISMISSED
+}
+
+model Alert {
+  id         String      @id @default(cuid())
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  poolId     String
+  pool       Pool        @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  kind       AlertKind
+  threshold  Float
+  status     AlertStatus @default(PENDING)
+  message    String?
+  createdAt  DateTime    @default(now())
+  triggeredAt DateTime?
+
+  @@index([poolId])
+  @@index([userId])
+}
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  poolId    String
+  pool      Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, poolId])
+}
+
+model AiInsight {
+  id        String   @id @default(cuid())
+  poolId    String
+  pool      Pool     @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  summary   String
+  signals   Json
+  createdAt DateTime @default(now())
+
+  @@index([poolId, createdAt])
+}
